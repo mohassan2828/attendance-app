@@ -37,7 +37,6 @@ document.getElementById('attForm').onsubmit = function(e) {
   const date = document.getElementById('date').value;
   const tIn = document.getElementById('in').value;
   const tOut = document.getElementById('out').value;
-  // إصلاح: التأكد من جلب القيمة من id="note"
   const noteVal = document.getElementById('note').value.trim(); 
   
   const mIn = (parseInt(tIn.split(':')[0]) * 60) + parseInt(tIn.split(':')[1]);
@@ -51,7 +50,7 @@ document.getElementById('attForm').onsubmit = function(e) {
     date, 
     diff, 
     timeRange: `من ${tIn} إلى ${tOut}`,
-    note: noteVal // حفظ الملاحظة بنجاح
+    note: noteVal 
   });
   
   save();
@@ -61,14 +60,23 @@ document.getElementById('attForm').onsubmit = function(e) {
 
 function renderAtt() {
   const myAtt = atts.filter(a => a.empId === selectedId);
-  document.getElementById('attTableBody').innerHTML = myAtt.map(a => `
-    <tr>
-      <td style="padding:10px;">${a.date}</td>
-      <td style="padding:10px;">${Math.floor(a.diff/60)}س و ${a.diff%60}د<br><small style="color:#1a73e8">${a.timeRange}</small></td>
-      <td style="padding:10px; color:#555; font-size:11px;">${a.note || '---'}</td>
-      <td onclick="delAtt(${a.id})" style="color:#dc3545; cursor:pointer; font-weight:bold;">✕</td>
-    </tr>
-  `).join('');
+  let totalMins = 0;
+  
+  document.getElementById('attTableBody').innerHTML = myAtt.map(a => {
+    totalMins += a.diff;
+    return `
+      <tr>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${a.date}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${Math.floor(a.diff/60)}س ${a.diff%60}د<br><small style="color:#1a73e8">${a.timeRange}</small></td>
+        <td style="padding:8px; border-bottom:1px solid #eee; font-size:11px;">${a.note || '---'}</td>
+        <td onclick="delAtt(${a.id})" style="color:red; cursor:pointer;">✕</td>
+      </tr>
+    `;
+  }).join('');
+
+  // تحديث الإجماليات في النافذة
+  document.getElementById('totalDays').innerText = myAtt.length;
+  document.getElementById('totalHours').innerText = Math.floor(totalMins/60) + " ساعة";
 }
 
 function save() {
@@ -77,7 +85,7 @@ function save() {
 }
 
 function downloadAllEmpsPDF() {
-    if (emps.length === 0) return alert("لا يوجد بيانات لتصديرها");
+    if (emps.length === 0) return alert("لا توجد بيانات");
     const reportContent = document.getElementById('report-content');
     reportContent.innerHTML = ''; 
 
@@ -86,18 +94,18 @@ function downloadAllEmpsPDF() {
         let totalMins = 0;
         
         let empHtml = `
-            <div style="margin-bottom: 40px; page-break-inside: avoid;">
-                <div style="background: #1a73e8; color: white; padding: 10px 15px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between;">
-                    <span style="font-weight: bold;">الموظف: ${emp.name}</span>
-                    <span>الوظيفة: ${emp.job}</span>
+            <div style="margin-bottom: 40px; page-break-inside: avoid; border: 2px solid #1a73e8; border-radius: 12px; overflow: hidden;">
+                <div style="background: #1a73e8; color: white; padding: 15px; font-size: 18px; display: flex; justify-content: space-between;">
+                    <span><b>الموظف:</b> ${emp.name}</span>
+                    <span><b>الوظيفة:</b> ${emp.job}</span>
                 </div>
-                <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #1a73e8;">
+                <table style="width: 100%; border-collapse: collapse; text-align: center;">
                     <thead>
-                        <tr style="background: #e8f0fe; color: #1a73e8;">
-                            <th style="padding: 10px; border: 1px solid #1a73e8;">التاريخ</th>
-                            <th style="padding: 10px; border: 1px solid #1a73e8;">المدة</th>
-                            <th style="padding: 10px; border: 1px solid #1a73e8;">الوقت</th>
-                            <th style="padding: 10px; border: 1px solid #1a73e8;">الملاحظات</th>
+                        <tr style="background: #f1f8ff; color: #1a73e8; border-bottom: 2px solid #1a73e8;">
+                            <th style="padding: 12px; border: 1px solid #eee;">التاريخ</th>
+                            <th style="padding: 12px; border: 1px solid #eee;">مدة العمل</th>
+                            <th style="padding: 12px; border: 1px solid #eee;">الفترة</th>
+                            <th style="padding: 12px; border: 1px solid #eee;">الملاحظات</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -107,18 +115,18 @@ function downloadAllEmpsPDF() {
             totalMins += a.diff;
             empHtml += `
                 <tr>
-                    <td style="padding: 8px; border: 1px solid #eee;">${a.date}</td>
-                    <td style="padding: 8px; border: 1px solid #eee;">${Math.floor(a.diff/60)}س ${a.diff%60}د</td>
-                    <td style="padding: 8px; border: 1px solid #eee;">${a.timeRange}</td>
-                    <td style="padding: 8px; border: 1px solid #eee; color: #555;">${a.note || '---'}</td>
+                    <td style="padding: 10px; border: 1px solid #eee; font-weight: bold;">${a.date}</td>
+                    <td style="padding: 10px; border: 1px solid #eee;">${Math.floor(a.diff/60)} ساعة و ${a.diff%60} دقيقة</td>
+                    <td style="padding: 10px; border: 1px solid #eee; color: #1a73e8;">${a.timeRange}</td>
+                    <td style="padding: 10px; border: 1px solid #eee; color: #666; font-style: italic;">${a.note || '---'}</td>
                 </tr>`;
         });
 
         empHtml += `
                     </tbody>
                 </table>
-                <div style="background: #f8f9fa; padding: 10px; border: 1px solid #1a73e8; border-top: none; border-radius: 0 0 8px 8px; font-weight: bold;">
-                    إجمالي الساعات لهذا الموظف: ${Math.floor(totalMins/60)} ساعة و ${totalMins%60} دقيقة
+                <div style="background: #e3f2fd; padding: 15px; border-top: 2px solid #1a73e8; font-size: 16px; font-weight: bold; color: #0d47a1;">
+                    📊 الخلاصة: إجمالي الأيام (${empAtt.length}) | إجمالي الساعات المستحقة (${Math.floor(totalMins/60)} ساعة و ${totalMins%60} دقيقة)
                 </div>
             </div>
         `;
@@ -128,15 +136,13 @@ function downloadAllEmpsPDF() {
     const element = document.getElementById('full-report-template');
     element.style.display = 'block';
 
-    const opt = {
-        margin: 0.3,
-        filename: 'تقرير_الحضور_المطور.pdf',
+    html2pdf().set({
+        margin: 0.5,
+        filename: 'تقرير_الموظفين_الشامل.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 3 },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-    };
-
-    html2pdf().set(opt).from(element).save().then(() => {
+    }).from(element).save().then(() => {
         element.style.display = 'none';
     });
 }
@@ -150,7 +156,7 @@ function delAtt(id) {
 }
 
 function deleteFullEmp() {
-  if(confirm("هل أنت متأكد من حذف الموظف وكل سجلاته نهائياً؟")) {
+  if(confirm("حذف الموظف نهائياً؟")) {
     emps = emps.filter(e => e.id !== selectedId);
     atts = atts.filter(a => a.empId !== selectedId);
     save();
