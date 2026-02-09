@@ -2,13 +2,16 @@ let emps = JSON.parse(localStorage.getItem('my_emps')) || [];
 let atts = JSON.parse(localStorage.getItem('my_atts')) || [];
 let selectedId = null;
 
+// عرض قائمة الموظفين في الصفحة الرئيسية
 function renderEmps() {
   const container = document.getElementById('empList');
+  if (!container) return;
   container.innerHTML = emps.map(e => `
     <div class="emp-item" onclick="openModal('${e.id}')">${e.name}</div>
   `).join('');
 }
 
+// إضافة موظف جديد
 function addEmployee() {
   const name = document.getElementById('empName').value.trim();
   const job = document.getElementById('empJob').value.trim();
@@ -22,6 +25,7 @@ function addEmployee() {
   } else { alert("اكتب الاسم والوظيفة أولاً"); }
 }
 
+// فتح نافذة الموظف وسجلاته
 function openModal(id) {
   selectedId = id;
   const emp = emps.find(e => e.id === id);
@@ -33,6 +37,7 @@ function openModal(id) {
 
 function closeModal() { document.getElementById('attendanceModal').style.display = "none"; }
 
+// حفظ سجل حضور وانصراف جديد
 document.getElementById('attForm').onsubmit = function(e) {
   e.preventDefault();
   const date = document.getElementById('date').value;
@@ -42,15 +47,15 @@ document.getElementById('attForm').onsubmit = function(e) {
   const mIn = (parseInt(tIn.split(':')[0]) * 60) + parseInt(tIn.split(':')[1]);
   const mOut = (parseInt(tOut.split(':')[0]) * 60) + parseInt(tOut.split(':')[1]);
   let diff = mOut - mIn;
-  if (diff < 0) diff += 1440;
+  if (diff < 0) diff += 1440; // التعامل مع فترات العمل التي تتخطى منتصف الليل
 
-  // التعديل هنا: قمنا بإضافة وقت الحضور والانصراف للكائن المحفوظ
+  // حفظ السجل مع تفاصيل الوقت "من وإلى"
   atts.push({ 
     id: Date.now(), 
     empId: selectedId, 
     date, 
-    diff,
-    timeRange: `من ${tIn} إلى ${tOut}` // السطر الجديد المضاف
+    diff, 
+    timeRange: `من ${tIn} إلى ${tOut}` 
   });
   
   save();
@@ -58,17 +63,17 @@ document.getElementById('attForm').onsubmit = function(e) {
   e.target.reset();
 };
 
+// عرض جدول الحضور للموظف المختار
 function renderAtt() {
   const myAtt = atts.filter(a => a.empId === selectedId);
   let totalMins = 0;
   document.getElementById('attTableBody').innerHTML = myAtt.map(a => {
     totalMins += a.diff;
-    // التعديل هنا: عرض وقت الحضور والانصراف بجانب الساعات والدقائق
-    const timeDetail = a.timeRange ? `<br><small style="color:blue">${a.timeRange}</small>` : "";
+    const details = a.timeRange ? `<br><small style="color:blue">${a.timeRange}</small>` : "";
     return `<tr>
       <td>${a.date}</td>
-      <td>${Math.floor(a.diff/60)}س و ${a.diff%60}د ${timeDetail}</td>
-      <td onclick="delAtt(${a.id})" style="color:red">✕</td>
+      <td>${Math.floor(a.diff/60)}س و ${a.diff%60}د ${details}</td>
+      <td onclick="delAtt(${a.id})" style="color:red; cursor:pointer">✕</td>
     </tr>`;
   }).join('');
   
@@ -76,12 +81,14 @@ function renderAtt() {
   document.getElementById('statHours').innerText = Math.floor(totalMins/60) + " ساعة";
 }
 
+// حذف سجل واحد
 function delAtt(id) {
   atts = atts.filter(a => a.id !== id);
   save();
   renderAtt();
 }
 
+// حذف موظف وكل سجلاته
 function deleteFullEmp() {
   if(confirm("هل تريد حذف هذا الموظف وسجلاته نهائياً؟")) {
     emps = emps.filter(e => e.id !== selectedId);
@@ -92,32 +99,32 @@ function deleteFullEmp() {
   }
 }
 
+// حفظ البيانات في ذاكرة المتصفح
 function save() {
   localStorage.setItem('my_emps', JSON.stringify(emps));
   localStorage.setItem('my_atts', JSON.stringify(atts));
 }
 
-renderEmps();
+// دالة تحميل تقرير PDF شامل لكل الموظفين
 function downloadAllEmpsPDF() {
-    const reportContent = document.getElementById('report-content');
-    reportContent.innerHTML = ''; // تفريغ المحتوى السابق
-
     if (emps.length === 0) return alert("لا يوجد موظفين لتصدير تقريرهم");
 
-    // بناء محتوى التقرير لكل موظف
+    const reportContent = document.getElementById('report-content');
+    reportContent.innerHTML = ''; 
+
     emps.forEach(emp => {
         const empAtt = atts.filter(a => a.empId === emp.id);
         let totalMins = 0;
         
         let empHtml = `
-            <div style="margin-bottom: 40px; border-bottom: 2px solid #eee; padding-bottom: 20px;">
-                <h3>الموظف: ${emp.name} | الوظيفة: ${emp.job}</h3>
-                <table border="1" style="width: 100%; border-collapse: collapse; text-align: center;">
-                    <thead style="background: #f8f9fa;">
+            <div style="margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px; direction: rtl; font-family: Arial, sans-serif;">
+                <h3 style="color: #1a73e8;">الموظف: ${emp.name} | الوظيفة: ${emp.job}</h3>
+                <table border="1" style="width: 100%; border-collapse: collapse; text-align: center; font-size: 12px;">
+                    <thead style="background: #f0f0f0;">
                         <tr>
-                            <th style="padding: 8px;">التاريخ</th>
-                            <th style="padding: 8px;">مدة العمل</th>
-                            <th style="padding: 8px;">التفاصيل</th>
+                            <th style="padding: 5px;">التاريخ</th>
+                            <th style="padding: 5px;">المدة</th>
+                            <th style="padding: 5px;">الوقت التفصيلي</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -127,9 +134,9 @@ function downloadAllEmpsPDF() {
             totalMins += a.diff;
             empHtml += `
                 <tr>
-                    <td style="padding: 8px;">${a.date}</td>
-                    <td style="padding: 8px;">${Math.floor(a.diff/60)}س و ${a.diff%60}د</td>
-                    <td style="padding: 8px;">${a.timeRange || 'غير مسجل'}</td>
+                    <td style="padding: 5px;">${a.date}</td>
+                    <td style="padding: 5px;">${Math.floor(a.diff/60)}س و ${a.diff%60}د</td>
+                    <td style="padding: 5px;">${a.timeRange || '---'}</td>
                 </tr>
             `;
         });
@@ -137,19 +144,18 @@ function downloadAllEmpsPDF() {
         empHtml += `
                     </tbody>
                 </table>
-                <p><strong>إجمالي الأيام:</strong> ${empAtt.length} | <strong>إجمالي الساعات:</strong> ${Math.floor(totalMins/60)} ساعة</p>
+                <p>إجمالي الأيام: ${empAtt.length} | إجمالي الساعات: ${Math.floor(totalMins/60)} ساعة</p>
             </div>
         `;
         reportContent.innerHTML += empHtml;
     });
 
-    // إعدادات وتحميل الـ PDF
     const element = document.getElementById('full-report-template');
     element.style.display = 'block';
 
     const opt = {
         margin: 0.5,
-        filename: 'التقرير_الشامل_للموظفين.pdf',
+        filename: 'تقرير_الحضور_الشامل.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
@@ -159,3 +165,6 @@ function downloadAllEmpsPDF() {
         element.style.display = 'none';
     });
 }
+
+// تشغيل عرض الموظفين عند تحميل الصفحة
+renderEmps();
