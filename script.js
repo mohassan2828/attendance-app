@@ -98,3 +98,64 @@ function save() {
 }
 
 renderEmps();
+function downloadAllEmpsPDF() {
+    const reportContent = document.getElementById('report-content');
+    reportContent.innerHTML = ''; // تفريغ المحتوى السابق
+
+    if (emps.length === 0) return alert("لا يوجد موظفين لتصدير تقريرهم");
+
+    // بناء محتوى التقرير لكل موظف
+    emps.forEach(emp => {
+        const empAtt = atts.filter(a => a.empId === emp.id);
+        let totalMins = 0;
+        
+        let empHtml = `
+            <div style="margin-bottom: 40px; border-bottom: 2px solid #eee; padding-bottom: 20px;">
+                <h3>الموظف: ${emp.name} | الوظيفة: ${emp.job}</h3>
+                <table border="1" style="width: 100%; border-collapse: collapse; text-align: center;">
+                    <thead style="background: #f8f9fa;">
+                        <tr>
+                            <th style="padding: 8px;">التاريخ</th>
+                            <th style="padding: 8px;">مدة العمل</th>
+                            <th style="padding: 8px;">التفاصيل</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        empAtt.forEach(a => {
+            totalMins += a.diff;
+            empHtml += `
+                <tr>
+                    <td style="padding: 8px;">${a.date}</td>
+                    <td style="padding: 8px;">${Math.floor(a.diff/60)}س و ${a.diff%60}د</td>
+                    <td style="padding: 8px;">${a.timeRange || 'غير مسجل'}</td>
+                </tr>
+            `;
+        });
+
+        empHtml += `
+                    </tbody>
+                </table>
+                <p><strong>إجمالي الأيام:</strong> ${empAtt.length} | <strong>إجمالي الساعات:</strong> ${Math.floor(totalMins/60)} ساعة</p>
+            </div>
+        `;
+        reportContent.innerHTML += empHtml;
+    });
+
+    // إعدادات وتحميل الـ PDF
+    const element = document.getElementById('full-report-template');
+    element.style.display = 'block';
+
+    const opt = {
+        margin: 0.5,
+        filename: 'التقرير_الشامل_للموظفين.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+        element.style.display = 'none';
+    });
+}
