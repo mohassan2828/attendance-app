@@ -3,106 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الحضور والإنصراف الاحترافي</title>
-    
+    <title>نظام الحضور والإنصراف المتطور</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
     <link rel="stylesheet" href="style.css">
     <style>
-        /* تحسينات إضافية للتصميم */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 10px; }
         .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .main-title { text-align: center; color: #1a73e8; margin-bottom: 20px; font-size: 24px; }
-        
-        .pdf-btn { 
-            width: 100%; background-color: #ffc107; color: #000; padding: 15px; 
-            border: none; border-radius: 10px; font-weight: bold; font-size: 16px; 
-            cursor: pointer; transition: 0.3s; margin-bottom: 20px;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-        }
-        .pdf-btn:active { transform: scale(0.98); background-color: #e0a800; }
-
-        .add-emp-box { background: #f8f9fa; padding: 15px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 20px; }
-        .add-emp-box h3 { margin-top: 0; color: #333; font-size: 18px; }
+        .pdf-btn { width: 100%; background-color: #ffc107; color: #000; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
+        .add-emp-box { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #ddd; }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
         .add-btn { width: 100%; background-color: #1a73e8; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-
         .emp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .emp-item { background: #fff; border: 2px solid #1a73e8; color: #1a73e8; padding: 15px; text-align: center; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .emp-item:active { background: #1a73e8; color: white; }
-
-        /* تنسيق الجدول داخل الـ PDF */
-        #full-report-template table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        #full-report-template th, #full-report-template td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        .emp-item { background: #fff; border: 2px solid #1a73e8; color: #1a73e8; padding: 15px; text-align: center; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        
+        /* تنسيق الجدول ليشمل الملاحظات */
+        .att-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        .att-table th, .att-table td { border-bottom: 1px solid #ddd; padding: 8px; text-align: center; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1 class="main-title">نظام الحضور والإنصراف</h1>
+        <h1 style="text-align: center; color: #1a73e8;">نظام الحضور والإنصراف</h1>
 
-        <button onclick="downloadAllEmpsPDF()" class="pdf-btn">
-            <span>📄</span> تحميل تقرير الموظفين الشامل (PDF)
-        </button>
+        <button onclick="downloadAllEmpsPDF()" class="pdf-btn">📄 تحميل التقرير الشامل مع الملاحظات (PDF)</button>
 
         <div class="add-emp-box">
             <h3>إضافة موظف جديد</h3>
-            <input type="text" id="empName" placeholder="اسم الموظف الثلاثي">
-            <input type="text" id="empJob" placeholder="التخصص / الوظيفة">
+            <input type="text" id="empName" placeholder="اسم الموظف">
+            <input type="text" id="empJob" placeholder="الوظيفة">
             <button onclick="addEmployee()" class="add-btn">إضافة للمنظومة +</button>
         </div>
 
-        <h3 style="border-right: 4px solid #1a73e8; padding-right: 10px;">قائمة الموظفين</h3>
-        <div id="empList" class="emp-grid">
-            </div>
+        <div id="empList" class="emp-grid"></div>
     </div>
 
     <div id="attendanceModal" class="modal" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000;">
-        <div class="modal-content" style="background:white; width:90%; max-width:500px; margin:20px auto; padding:20px; border-radius:15px; position:relative; max-height: 90vh; overflow-y: auto;">
-            <span onclick="closeModal()" style="position:absolute; left:20px; top:10px; font-size:28px; cursor:pointer;">&times;</span>
+        <div class="modal-content" style="background:white; width:92%; max-width:500px; margin:15px auto; padding:15px; border-radius:15px; position:relative; max-height: 90vh; overflow-y: auto;">
+            <span onclick="closeModal()" style="position:absolute; left:15px; top:10px; font-size:25px; cursor:pointer;">&times;</span>
             <h2 id="targetName" style="color:#1a73e8; margin-bottom:5px;"></h2>
-            <p id="targetJob" style="margin-top:0; color:#666;"></p>
+            <p id="targetJob" style="color:#666; margin-top:0;"></p>
             <hr>
             
             <form id="attForm">
-                <label>التاريخ:</label>
                 <input type="date" id="date" required>
                 <div style="display:flex; gap:10px;">
-                    <div style="flex:1;">
-                        <label>حضور:</label>
-                        <input type="time" id="in" required>
-                    </div>
-                    <div style="flex:1;">
-                        <label>انصراف:</label>
-                        <input type="time" id="out" required>
-                    </div>
+                    <input type="time" id="in" required title="وقت الحضور">
+                    <input type="time" id="out" required title="وقت الانصراف">
                 </div>
-                <button type="submit" class="add-btn" style="background-color:#28a745; margin-top:10px;">حفظ السجل</button>
+                <input type="text" id="note" placeholder="ملاحظات (تأخير، إذن، إلخ...)">
+                <button type="submit" class="add-btn" style="background-color:#28a745;">حفظ السجل</button>
             </form>
 
-            <div style="display:flex; justify-content: space-around; margin: 15px 0;">
-                <div style="background:#e8f0fe; padding:10px; border-radius:8px; text-align:center;">الأيام: <br><b id="statDays">0</b></div>
-                <div style="background:#e8f0fe; padding:10px; border-radius:8px; text-align:center;">الساعات: <br><b id="statHours">0</b></div>
-            </div>
-
-            <table style="width:100%; border-collapse: collapse; margin-top:10px;">
-                <thead style="background:#f8f9fa;">
+            <table class="att-table">
+                <thead>
                     <tr>
-                        <th style="padding:10px; border-bottom:1px solid #ddd;">اليوم</th>
-                        <th style="padding:10px; border-bottom:1px solid #ddd;">المدة</th>
-                        <th style="padding:10px; border-bottom:1px solid #ddd;">حذف</th>
+                        <th>اليوم</th>
+                        <th>المدة/الوقت</th>
+                        <th>ملاحظة</th>
+                        <th>حذف</th>
                     </tr>
                 </thead>
-                <tbody id="attTableBody" style="text-align:center;"></tbody>
+                <tbody id="attTableBody"></tbody>
             </table>
 
-            <button onclick="deleteFullEmp()" style="width:100%; background:none; color:red; border:1px solid red; padding:10px; border-radius:8px; margin-top:20px; cursor:pointer;">حذف الموظف نهائياً</button>
+            <button onclick="deleteFullEmp()" style="width:100%; background:none; color:red; border:1px solid red; padding:10px; border-radius:8px; margin-top:20px;">حذف الموظف نهائياً</button>
         </div>
     </div>
 
-    <div id="full-report-template" style="display:none; padding: 40px; background: white; direction: rtl; font-family: Arial, sans-serif;">
-        <h1 style="text-align: center; color: #1a73e8; border-bottom: 3px solid #1a73e8; padding-bottom: 10px;">تقرير الحضور والإنصراف الشامل</h1>
-        <p style="text-align: left;" id="reportDate"></p>
+    <div id="full-report-template" style="display:none; padding: 20px; background: white; direction: rtl; font-family: Arial, sans-serif;">
+        <h1 style="text-align: center; color: #1a73e8; border-bottom: 2px solid #1a73e8; padding-bottom: 10px;">تقرير الحضور والإنصراف الشامل</h1>
         <div id="report-content"></div>
     </div>
 
