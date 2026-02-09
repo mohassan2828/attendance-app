@@ -2,12 +2,14 @@ let emps = JSON.parse(localStorage.getItem('my_emps')) || [];
 let atts = JSON.parse(localStorage.getItem('my_atts')) || [];
 let selectedId = null;
 
+// عرض قائمة الموظفين
 function renderEmps() {
   const container = document.getElementById('empList');
   if (!container) return;
   container.innerHTML = emps.map(e => `<div class="emp-item" onclick="openModal('${e.id}')">${e.name}</div>`).join('');
 }
 
+// إضافة موظف
 function addEmployee() {
   const name = document.getElementById('empName').value.trim();
   const job = document.getElementById('empJob').value.trim();
@@ -21,17 +23,19 @@ function addEmployee() {
   }
 }
 
+// فتح نافذة الموظف وتحديث البيانات
 function openModal(id) {
   selectedId = id;
   const emp = emps.find(e => e.id === id);
   document.getElementById('targetName').innerText = emp.name;
   document.getElementById('targetJob').innerText = emp.job;
   document.getElementById('attendanceModal').style.display = "block";
-  renderAtt();
+  renderAtt(); // تحديث الجدول والأرقام فور الفتح
 }
 
 function closeModal() { document.getElementById('attendanceModal').style.display = "none"; }
 
+// حفظ سجل الحضور مع الملاحظة
 document.getElementById('attForm').onsubmit = function(e) {
   e.preventDefault();
   const date = document.getElementById('date').value;
@@ -54,10 +58,11 @@ document.getElementById('attForm').onsubmit = function(e) {
   });
   
   save();
-  renderAtt();
+  renderAtt(); // تحديث الواجهة والأرقام
   e.target.reset();
 };
 
+// تحديث جدول الموظف وحساب الإجماليات (الأيام والساعات)
 function renderAtt() {
   const myAtt = atts.filter(a => a.empId === selectedId);
   let totalMins = 0;
@@ -66,17 +71,17 @@ function renderAtt() {
     totalMins += a.diff;
     return `
       <tr>
-        <td style="padding:8px; border-bottom:1px solid #eee;">${a.date}</td>
-        <td style="padding:8px; border-bottom:1px solid #eee;">${Math.floor(a.diff/60)}س ${a.diff%60}د<br><small style="color:#1a73e8">${a.timeRange}</small></td>
-        <td style="padding:8px; border-bottom:1px solid #eee; font-size:11px;">${a.note || '---'}</td>
+        <td>${a.date}</td>
+        <td>${Math.floor(a.diff/60)}س و ${a.diff%60}د<br><small style="color:#1a73e8">${a.timeRange}</small></td>
+        <td style="font-size:11px; color:#555;">${a.note || '---'}</td>
         <td onclick="delAtt(${a.id})" style="color:red; cursor:pointer;">✕</td>
       </tr>
     `;
   }).join('');
 
-  // تحديث الإجماليات في النافذة
+  // تحديث شريط الإحصائيات في النافذة
   document.getElementById('totalDays').innerText = myAtt.length;
-  document.getElementById('totalHours').innerText = Math.floor(totalMins/60) + " ساعة";
+  document.getElementById('totalHours').innerText = Math.floor(totalMins/60) + " ساعة و " + (totalMins%60) + " دقيقة";
 }
 
 function save() {
@@ -84,6 +89,7 @@ function save() {
   localStorage.setItem('my_atts', JSON.stringify(atts));
 }
 
+// إنشاء ملف PDF احترافي مع الإجماليات
 function downloadAllEmpsPDF() {
     if (emps.length === 0) return alert("لا توجد بيانات");
     const reportContent = document.getElementById('report-content');
@@ -103,8 +109,8 @@ function downloadAllEmpsPDF() {
                     <thead>
                         <tr style="background: #f1f8ff; color: #1a73e8; border-bottom: 2px solid #1a73e8;">
                             <th style="padding: 12px; border: 1px solid #eee;">التاريخ</th>
-                            <th style="padding: 12px; border: 1px solid #eee;">مدة العمل</th>
-                            <th style="padding: 12px; border: 1px solid #eee;">الفترة</th>
+                            <th style="padding: 12px; border: 1px solid #eee;">المدة</th>
+                            <th style="padding: 12px; border: 1px solid #eee;">الوقت</th>
                             <th style="padding: 12px; border: 1px solid #eee;">الملاحظات</th>
                         </tr>
                     </thead>
@@ -115,10 +121,10 @@ function downloadAllEmpsPDF() {
             totalMins += a.diff;
             empHtml += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #eee; font-weight: bold;">${a.date}</td>
-                    <td style="padding: 10px; border: 1px solid #eee;">${Math.floor(a.diff/60)} ساعة و ${a.diff%60} دقيقة</td>
-                    <td style="padding: 10px; border: 1px solid #eee; color: #1a73e8;">${a.timeRange}</td>
-                    <td style="padding: 10px; border: 1px solid #eee; color: #666; font-style: italic;">${a.note || '---'}</td>
+                    <td style="padding: 10px; border: 1px solid #eee;">${a.date}</td>
+                    <td style="padding: 10px; border: 1px solid #eee;">${Math.floor(a.diff/60)}س و ${a.diff%60}د</td>
+                    <td style="padding: 10px; border: 1px solid #eee;">${a.timeRange}</td>
+                    <td style="padding: 10px; border: 1px solid #eee; font-style: italic;">${a.note || '---'}</td>
                 </tr>`;
         });
 
@@ -126,7 +132,7 @@ function downloadAllEmpsPDF() {
                     </tbody>
                 </table>
                 <div style="background: #e3f2fd; padding: 15px; border-top: 2px solid #1a73e8; font-size: 16px; font-weight: bold; color: #0d47a1;">
-                    📊 الخلاصة: إجمالي الأيام (${empAtt.length}) | إجمالي الساعات المستحقة (${Math.floor(totalMins/60)} ساعة و ${totalMins%60} دقيقة)
+                    📊 الخلاصة: إجمالي الأيام (${empAtt.length}) | إجمالي الساعات (${Math.floor(totalMins/60)} ساعة و ${totalMins%60} دقيقة)
                 </div>
             </div>
         `;
@@ -135,20 +141,13 @@ function downloadAllEmpsPDF() {
 
     const element = document.getElementById('full-report-template');
     element.style.display = 'block';
-
-    html2pdf().set({
-        margin: 0.5,
-        filename: 'تقرير_الموظفين_الشامل.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 3 },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-    }).from(element).save().then(() => {
+    html2pdf().set({ margin: 0.5, filename: 'تقرير_الحضور_المطور.pdf', html2canvas: { scale: 3 } }).from(element).save().then(() => {
         element.style.display = 'none';
     });
 }
 
 function delAtt(id) {
-  if(confirm("حذف هذا السجل؟")) {
+  if(confirm("حذف السجل؟")) {
     atts = atts.filter(a => a.id !== id);
     save();
     renderAtt();
