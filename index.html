@@ -1,66 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
-
-  <head>
+<html lang="ar" dir="rtl">
+<head>
     <meta charset="UTF-8">
-    <title>Untitled</title>
-    <link rel="stylesheet" href="./style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الحضور والإنصراف</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
 
-  </head>
-    
-  <body>
-  <div class="mobile-app">
-  <header class="app-header">
-    <h1>نظام الحضور والإنصراف</h1>
-  </header>
+    <div class="container">
+        <h1 style="text-align: center; color: #1a73e8;">نظام الحضور والإنصراف</h1>
 
-  <section class="card add-section">
-    <h3>إضافة موظف جديد</h3>
-    <input type="text" id="empName" placeholder="اسم الموظف">
-    <input type="text" id="empJob" placeholder="الوظيفة">
-    <button onclick="addEmployee()" class="btn-main">إضافة للمنظومة +</button>
-  </section>
-
-  <section class="card list-section">
-    <h3>قائمة الموظفين</h3>
-    <div id="empList" class="emp-grid"></div>
-  </section>
-
-  <div id="attendanceModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
-      <h2 id="targetName"></h2>
-      <p id="targetJob"></p>
-      <hr>
-      
-      <form id="attForm">
-        <label>التاريخ:</label>
-        <input type="date" id="date" required>
-        <div class="time-row">
-          <div><label>حضور:</label><input type="time" id="in" required></div>
-          <div><label>انصراف:</label><input type="time" id="out" required></div>
+        <div style="text-align: center; margin: 15px 0;">
+            <button onclick="downloadAllEmpsPDF()" style="background-color: #ffc107; color: #000; padding: 12px 25px; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                📄 تحميل التقرير الشامل (PDF)
+            </button>
         </div>
-        <button type="submit" class="btn-main">حفظ السجل</button>
-      </form>
 
-      <div class="stats-row">
-        <div class="stat-box">الأيام: <b id="statDays">0</b></div>
-        <div class="stat-box">الساعات: <b id="statHours">0</b></div>
-      </div>
+        <div class="add-emp-box">
+            <h3>إضافة موظف جديد</h3>
+            <input type="text" id="empName" placeholder="اسم الموظف">
+            <input type="text" id="empJob" placeholder="الوظيفة">
+            <button onclick="addEmployee()">إضافة للمنظومة +</button>
+        </div>
 
-      <table class="att-table">
-        <thead>
-          <tr><th>اليوم</th><th>ساعات</th><th>حذف</th></tr>
-        </thead>
-        <tbody id="attTableBody"></tbody>
-      </table>
-      
-      <button onclick="deleteFullEmp()" class="btn-danger">حذف الموظف نهائياً</button>
+        <h3>قائمة الموظفين</h3>
+        <div id="empList" class="emp-grid">
+            </div>
     </div>
-  </div>
-</div>
-    <script  src="./script.js"></script>
 
-  </body>
-  
+    <div id="attendanceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="targetName"></h2>
+            <p id="targetJob" style="color: #666;"></p>
+            
+            <form id="attForm">
+                <label>التاريخ:</label>
+                <input type="date" id="date" required>
+                
+                <div class="time-inputs">
+                    <div>
+                        <label>حضور:</label>
+                        <input type="time" id="in" required>
+                    </div>
+                    <div>
+                        <label>انصراف:</label>
+                        <input type="time" id="out" required>
+                    </div>
+                </div>
+                
+                <button type="submit">حفظ السجل</button>
+            </form>
+
+            <div class="stats">
+                <div class="stat-card">الأيام: <span id="statDays">0</span></div>
+                <div class="stat-card">الساعات: <span id="statHours">0</span></div>
+            </div>
+
+            <table class="att-table">
+                <thead>
+                    <tr>
+                        <th>اليوم</th>
+                        <th>ساعات</th>
+                        <th>حذف</th>
+                    </tr>
+                </thead>
+                <tbody id="attTableBody"></tbody>
+            </table>
+
+            <button onclick="deleteFullEmp()" class="del-full-btn">حذف الموظف نهائياً</button>
+        </div>
+    </div>
+
+    <div id="full-report-template" style="display:none; padding: 20px; background: white; direction: rtl; font-family: Arial, sans-serif;">
+        <h1 style="text-align: center; color: #1a73e8; border-bottom: 2px solid #1a73e8; padding-bottom: 10px;">تقرير الحضور والانصراف الشامل</h1>
+        <div id="report-content"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
 </html>
