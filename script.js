@@ -44,7 +44,15 @@ document.getElementById('attForm').onsubmit = function(e) {
   let diff = mOut - mIn;
   if (diff < 0) diff += 1440;
 
-  atts.push({ id: Date.now(), empId: selectedId, date, diff });
+  // التعديل هنا: قمنا بإضافة وقت الحضور والانصراف للكائن المحفوظ
+  atts.push({ 
+    id: Date.now(), 
+    empId: selectedId, 
+    date, 
+    diff,
+    timeRange: `من ${tIn} إلى ${tOut}` // السطر الجديد المضاف
+  });
+  
   save();
   renderAtt();
   e.target.reset();
@@ -55,9 +63,11 @@ function renderAtt() {
   let totalMins = 0;
   document.getElementById('attTableBody').innerHTML = myAtt.map(a => {
     totalMins += a.diff;
+    // التعديل هنا: عرض وقت الحضور والانصراف بجانب الساعات والدقائق
+    const timeDetail = a.timeRange ? `<br><small style="color:blue">${a.timeRange}</small>` : "";
     return `<tr>
       <td>${a.date}</td>
-      <td>${Math.floor(a.diff/60)}س و ${a.diff%60}د</td>
+      <td>${Math.floor(a.diff/60)}س و ${a.diff%60}د ${timeDetail}</td>
       <td onclick="delAtt(${a.id})" style="color:red">✕</td>
     </tr>`;
   }).join('');
