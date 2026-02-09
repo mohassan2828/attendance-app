@@ -3,79 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الحضور والإنصراف الذكي</title>
+    <title>نظام الحضور والإنصراف الاحترافي</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding: 10px; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .pdf-btn { width: 100%; background: linear-gradient(45deg, #ffc107, #ff9800); color: #000; padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-bottom: 20px; font-size: 16px; transition: 0.3s; }
-        .pdf-btn:active { transform: scale(0.98); }
-        .add-emp-box { background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #e0e0e0; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1.5px solid #eee; border-radius: 10px; box-sizing: border-box; font-size: 14px; background: #fdfdfd; }
-        input:focus { border-color: #1a73e8; outline: none; background: #fff; }
-        .add-btn { width: 100%; background-color: #1a73e8; color: white; padding: 14px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; }
-        .emp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .emp-item { background: #fff; border: 2px solid #1a73e8; color: #1a73e8; padding: 18px; text-align: center; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .emp-item:active { background: #1a73e8; color: white; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; padding: 10px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .pdf-btn { width: 100%; background: linear-gradient(135deg, #1a73e8, #0d47a1); color: white; padding: 15px; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 20px; }
+        .add-emp-box { background: #f9f9f9; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #eee; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+        .add-btn { width: 100%; background-color: #28a745; color: white; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .emp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .emp-item { background: #fff; border: 2px solid #1a73e8; color: #1a73e8; padding: 15px; text-align: center; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        
+        /* تنسيق الملخص داخل النافذة */
+        .stats-summary { display: flex; justify-content: space-around; margin: 15px 0; background: #e3f2fd; padding: 10px; border-radius: 10px; color: #0d47a1; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1 style="text-align: center; color: #1a73e8; font-size: 22px;">نظام الحضور والإنصراف</h1>
+        <h1 style="text-align: center; color: #1a73e8;">نظام الحضور والإنصراف</h1>
 
-        <button onclick="downloadAllEmpsPDF()" class="pdf-btn">📄 تحميل التقرير الشامل الملون</button>
+        <button onclick="downloadAllEmpsPDF()" class="pdf-btn">📄 تحميل تقرير PDF الشامل (تصميم مطور)</button>
 
         <div class="add-emp-box">
-            <h3 style="margin-top:0; font-size: 16px;">إضافة موظف جديد</h3>
+            <h3>إضافة موظف جديد</h3>
             <input type="text" id="empName" placeholder="اسم الموظف">
             <input type="text" id="empJob" placeholder="الوظيفة">
-            <button onclick="addEmployee()" class="add-btn">إضافة موظف +</button>
+            <button onclick="addEmployee()" class="add-btn">إضافة للمنظومة +</button>
         </div>
 
         <div id="empList" class="emp-grid"></div>
     </div>
 
-    <div id="attendanceModal" class="modal" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; backdrop-filter: blur(4px);">
-        <div class="modal-content" style="background:white; width:90%; max-width:450px; margin:10vh auto; padding:20px; border-radius:25px; position:relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
-            <span onclick="closeModal()" style="position:absolute; left:20px; top:15px; font-size:30px; cursor:pointer; color:#999;">&times;</span>
-            <h2 id="targetName" style="color:#1a73e8; margin-bottom:5px; font-size:24px;"></h2>
-            <p id="targetJob" style="color:#666; margin-top:0; font-size:16px;"></p>
-            <hr style="border:0; border-top:1px solid #eee;">
+    <div id="attendanceModal" class="modal" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000;">
+        <div class="modal-content" style="background:white; width:90%; max-width:450px; margin:10vh auto; padding:20px; border-radius:25px; position:relative; max-height: 85vh; overflow-y: auto;">
+            <span onclick="closeModal()" style="position:absolute; left:20px; top:15px; font-size:28px; cursor:pointer;">&times;</span>
+            <h2 id="targetName" style="color:#1a73e8; margin-bottom:5px;"></h2>
+            <p id="targetJob" style="color:#666; margin-top:0;"></p>
+            <hr>
             
+            <div class="stats-summary">
+                <div>الأيام: <span id="totalDays">0</span></div>
+                <div>الساعات: <span id="totalHours">0</span></div>
+            </div>
+
             <form id="attForm">
                 <input type="date" id="date" required>
                 <div style="display:flex; gap:10px;">
                     <input type="time" id="in" required>
                     <input type="time" id="out" required>
                 </div>
-                <input type="text" id="note" placeholder="ملاحظات (تأخير، إذن، إلخ...)">
-                <button type="submit" class="add-btn" style="background-color:#28a745; margin-top:10px;">حفظ السجل</button>
+                <input type="text" id="note" placeholder="ملاحظات (تأخير، إذن...)">
+                <button type="submit" class="add-btn" style="background-color:#1a73e8; margin-top:10px;">حفظ السجل</button>
             </form>
 
-            <div style="max-height: 250px; overflow-y: auto; margin-top: 15px;">
-                <table style="width:100%; border-collapse: collapse; font-size: 13px;">
-                    <thead style="background:#f8f9fa; position: sticky; top:0;">
-                        <tr>
-                            <th style="padding:10px; border-bottom:2px solid #eee;">اليوم</th>
-                            <th style="padding:10px; border-bottom:2px solid #eee;">المدة</th>
-                            <th style="padding:10px; border-bottom:2px solid #eee;">ملاحظة</th>
-                            <th style="padding:10px; border-bottom:2px solid #eee;">حذف</th>
-                        </tr>
-                    </thead>
-                    <tbody id="attTableBody" style="text-align:center;"></tbody>
-                </table>
-            </div>
+            <table style="width:100%; border-collapse: collapse; margin-top: 15px; font-size: 13px;">
+                <thead style="background:#f8f9fa;">
+                    <tr>
+                        <th style="padding:8px; border-bottom:2px solid #eee;">اليوم</th>
+                        <th style="padding:8px; border-bottom:2px solid #eee;">المدة</th>
+                        <th style="padding:8px; border-bottom:2px solid #eee;">ملاحظة</th>
+                        <th style="padding:8px; border-bottom:2px solid #eee;">✕</th>
+                    </tr>
+                </thead>
+                <tbody id="attTableBody" style="text-align:center;"></tbody>
+            </table>
 
-            <button onclick="deleteFullEmp()" style="width:100%; background:none; color:#dc3545; border:1px solid #dc3545; padding:12px; border-radius:12px; margin-top:20px; font-weight:bold;">حذف الموظف نهائياً</button>
+            <button onclick="deleteFullEmp()" style="width:100%; background:none; color:red; border:1px solid red; padding:10px; border-radius:10px; margin-top:20px;">حذف الموظف نهائياً</button>
         </div>
     </div>
 
-    <div id="full-report-template" style="display:none; padding: 30px; background: white; direction: rtl; font-family: Arial, sans-serif;">
-        <div style="text-align: center; border-bottom: 4px solid #1a73e8; padding-bottom: 20px; margin-bottom: 30px;">
-            <h1 style="color: #1a73e8; margin: 0; font-size: 28px;">تقرير الحضور والإنصراف الشامل</h1>
-            <p style="color: #666; margin: 5px 0;">سجل المتابعة الدوري للموظفين</p>
+    <div id="full-report-template" style="display:none; padding: 40px; background: white; direction: rtl; font-family: Arial, sans-serif;">
+        <div style="text-align: center; border-bottom: 5px solid #1a73e8; padding-bottom: 20px; margin-bottom: 30px;">
+            <h1 style="color: #1a73e8; margin: 0; font-size: 28px;">تقرير الحضور والإنصراف العام</h1>
+            <p style="color: #666;">سجل المتابعة الدوري للموظفين</p>
         </div>
         <div id="report-content"></div>
     </div>
